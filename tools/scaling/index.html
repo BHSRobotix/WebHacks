@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="../../common/dbtz.css">
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+          integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+          integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+          crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+          integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+          crossorigin="anonymous"></script>
+
+  <script src="scaling.js"></script>
+
+  <style>
+    input[type=number] {
+      max-width: 80px;
+      text-align: right;
+    }
+
+    .num-display {
+      text-align: center;
+    }
+
+    .card {
+      max-width: 300px;
+      padding: 12px 24px;
+      margin: 0 0 24px;
+    }
+  </style>
+
+  <script>
+    $(function() {
+      initForm();
+      syncRangeValueInput(true);
+    });
+  </script>
+
+</head>
+<body>
+
+<div class="container">
+
+  <h2 class="devilbotz">Devilbotz 2876</h2>
+
+  <p>
+    This utility allows the user to quickly see how values vary from one scale to
+    another. Choose the scale end-points (min and max) and then choose the value
+    in the source scale ("from") to see how the value would fit in the second scale.
+    <a href="#" id="optionsTrigger">Options</a>
+  </p>
+
+  <div class="card d-none" id="optionsMenu">
+    <strong>Optional Settings</strong>
+    <div>
+      <label for="inputMethod">Input method:</label>
+      <select name="inputMethod" id="inputMethod" class="form-control input-sm" onchange="toggleInputMethod()">
+        <option value="slider">Slider</option>
+        <option value="text">Text</option>
+      </select>
+      <label for="sigDigits">Significant Digits:</label>
+      <input type="number" name="sigDigits" id="sigDigits" class="form-control input-sm">
+      <label for="stepVal">Step:</label>
+      <input type="number" name="stepVal" id="stepVal" class="form-control input-sm">
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th scope="col">Scale</th>
+      <th scope="col">Min</th>
+      <th scope="col"></th>
+      <th scope="col">Max</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+      <th scope="row">From</th>
+      <td>
+        <input type="number" name="minRange1" id="minRange1" onchange="onRangeEndChange()">
+      </td>
+      <td class="num-display">
+        <div id="inputMethodSlider">
+          <input type="range" class="form-control-range" id="valRange1" name="valRange1" step="any"
+                 onchange="onRangeChange()">
+          <span id="valRange1Display"></span>
+        </div>
+        <div id="inputMethodText" style="display: none;">
+          <input type="number" class="form-control-range" id="valRange1Text" name="valRange1Text"
+                 onchange="onRangeChange()">
+        </div>
+      </td>
+      <td>
+        <input type="number" name="maxRange1" id="maxRange1" onchange="onRangeChange()">
+      </td>
+    </tr>
+
+    <tr>
+      <th scope="row">To</th>
+      <td>
+        <input type="number" name="minRange2" id="minRange2" onchange="onRangeEndChange()">
+      </td>
+      <td class="num-display"><span id="valRange2Display"></span></td>
+      <td>
+        <input type="number" name="maxRange2" id="maxRange2" onchange="onRangeEndChange()">
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+</div>
+</body>
+</html>

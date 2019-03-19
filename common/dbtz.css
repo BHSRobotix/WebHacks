@@ -1,0 +1,11 @@
+@font-face {font-family: "Neuropolitical";
+    src: url("//db.onlinewebfonts.com/t/4f53a31793519db1375afc0ce45fc5bc.eot");
+    src: url("//db.onlinewebfonts.com/t/4f53a31793519db1375afc0ce45fc5bc.eot?#iefix") format("embedded-opentype"),
+    url("//db.onlinewebfonts.com/t/4f53a31793519db1375afc0ce45fc5bc.svg#Neuropolitical") format("svg");
+}
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+.devilbotz {
+    font-family: Neuropolitical, Arial, Helvetica, sans-serif;
+}
