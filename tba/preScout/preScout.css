@@ -1,0 +1,33 @@
+div#results {
+    display: none;
+    margin: 36px 24px;
+}
+
+div#results li {
+    font-size: small;
+    margin-left: 24px;
+}
+
+.unfetched {
+    color: #007bff;
+    cursor: pointer;
+}
+
+.tbd {
+    font-style: italic;
+    color: #888888;
+}
+
+.event-summary {
+    margin-right: 12px;
+    border: 1px dashed;
+    padding: 2px 4px;
+}
+
+.team-row td>span>i {
+    padding: 0 2px;
+}
+
+.waiting {
+    cursor: progress;
+}

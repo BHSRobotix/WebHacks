@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Next Competition</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+  <link rel="stylesheet" type="text/css" href="../../common/dbtz.css">
+  <link rel="stylesheet" type="text/css" href="preScout.css">
+
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="../../common/tba.js"></script>
+  <script src="preScout.js"></script>
+
+  <script>
+
+    const defaultEventKey = '2019macma';
+    const ttAttrs = 'data-toggle="tooltip" data-placement="bottom"';
+
+    let opponents, eventKey, year;
+    let teams_remaining = 100;
+    let allEventsAttended = [];
+    let eventData = {};
+
+    const createOpponentEventIcons = function(eventResults, teamKey) {
+      if (eventResults.length === 0) {
+        return $(`<td><span ${ttAttrs} title="No events attended"><i class="far fa-calendar-times"></i></span></td>`);
+      }
+      let jqTeamEvts = $(`<td></td>`);
+      for (let j = 0; j < eventResults.length; j++) {
+        const evtKey = eventResults[j].eventKey;
+        if (allEventsAttended.indexOf(evtKey) < 0) {
+          allEventsAttended.push(evtKey);
+        }
+        const jqEvtIcon = $(`<i class="fas fa-calendar-check unfetched"></i>`);
+        jqEvtIcon.data('tbaKeys', { teamKey, eventKey: evtKey });
+        const span = `<span ${ttAttrs} title="${eventResults[j].eventKey}: ${eventResults[j].eventResult}"></span>`;
+        $(span).append(jqEvtIcon).appendTo(jqTeamEvts);
+      }
+      return jqTeamEvts;
+    };
+
+    const createOpponentRows = function(opps) {
+      if (opps.length < 1) return;
+      let jqTableBody = $('#results table tbody');
+      jqTableBody.empty();
+      for (let i = 0; i < opps.length; i++) {
+        let jqTeamRow = $(`<tr id="${opps[i].key}" class="team-row"></tr>`).appendTo(jqTableBody);
+        jqTeamRow.append(`<td>${opps[i].team_number} - ${opps[i].nickname}</td>`);
+        jqTeamRow.append(createOpponentEventIcons(opps[i].event_results, opps[i].key));
+        jqTeamRow.append(`<td class="tbd summary">Event stats not yet retrieved</td>`);
+      }
+    };
+
+    const pullEventOprs = function() {
+      for (let i = 0; i < allEventsAttended.length; i++) {
+        tba.fetchOprsAtEvent(allEventsAttended[i]).then(data => {
+          eventData[allEventsAttended[i]] = data;
+        });
+      }
+    };
+
+    $(function() {
+      const jqBody = $('body');
+      $('.key-set').hide();
+      $('#eventKey').val(defaultEventKey);
+
+      jqBody.on('click', '#setKey', () => {
+        $('#setKey .spinner-border').removeClass('d-none');
+        const tbaKey = $('#tbaKey').val();
+        tba.setAuthKey(tbaKey).then(() => {
+          $('#setKey .spinner-border').addClass('d-none');
+          if (tba.hasValidKey()) {
+            $('.key-not-set').hide();
+            $('.key-set').show();
+            $('#tbaKeyValue').attr('title', `Key is ${tbaKey} - Click to change`);
+          }
+        });
+      });
+
+      jqBody.on('click', '#showTeams', () => {
+        if (tba.hasValidKey()) {
+          $('#showTeams .spinner-border').removeClass('d-none');
+          eventKey = $('#eventKey').val();
+          year = eventKey.substr(0,4);
+          tba.fetchTeamsByEvent(eventKey).then(data => {
+            $('#results').show();
+            opponents = data.sort((a1, a2) => a1.team_number - a2.team_number);
+            teams_remaining = opponents.length;
+            for (let i = 0; i < opponents.length; i++) {
+              tba.fetchTeamResultsByYear(year, opponents[i].key).then(d => {
+                opponents[i].event_results = preScout.getEvents(d);
+                teams_remaining--;
+              });
+            }
+          });
+        }
+
+        let rowsIntervalId = setInterval(function() {
+          if (teams_remaining === 0) {
+            createOpponentRows(opponents);
+            clearInterval(rowsIntervalId);
+            pullEventOprs();
+            $('#showTeams .spinner-border').addClass('d-none');
+          }
+        }, 50);
+
+      });
+
+      jqBody.on('click', 'i.unfetched', (evt) => {
+        let jqI = $(evt.currentTarget);
+        let d = jqI.data('tbaKeys');
+        $('#results').addClass('waiting');
+        tba.fetchMatchesByTeamAtEvent(d.teamKey, d.eventKey).then(data => {
+          jqI.removeClass('unfetched');
+          $('#results').removeClass('waiting');
+          const sum = preScout.summarizeMatches2019(d.teamKey, data);
+          const startLvl = `${sum.start.none} / ${sum.start.one} / ${sum.start.two}`;
+          const climbLvl = `${sum.climb.none} / ${sum.climb.one} / ${sum.climb.two} / ${sum.climb.three}`;
+          const stats = eventData[d.eventKey] ? `${Math.round(eventData[d.eventKey].oprs[d.teamKey] * 100) / 100}` : '';
+          $(`#${d.teamKey}`).find('.tbd').empty().removeClass('tbd');
+          $(`#${d.teamKey}`).find('.summary').append(
+            `<span class="event-summary" ${ttAttrs} title="${d.eventKey}">${startLvl} || ${climbLvl} || ${stats}</span>`
+          );
+        });
+      });
+    });
+  </script>
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="#"><span class="devilbotz">2876</span> TBA Scouting Assistant</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto"></ul>
+    <form class="form-inline">
+      <div class="input-group key-not-set">
+        <input type="text" id="tbaKey" name="tbaKey"
+               class="form-control" placeholder="TBA API Key" aria-label="TBA API Key">
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="button" id="setKey">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            Set Key
+          </button>
+        </div>
+      </div>
+
+      <span class="btn btn-secondary key-set" id="tbaKeyValue" data-toggle="tooltip" data-placement="bottom" title="">
+        <i class="fas fa-check"></i> TBA Key Set
+      </span>
+    </form>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="key-not-set mt-3">
+    <h3>Welcome to the TBA Pre-Scouting Assistant!</h3>
+    <p>
+      Before you can use this tool, you must supply an authorization key for the Blue Alliance API.
+      Please go to <a href="https://www.thebluealliance.com/account">your Blue Alliance account page</a>
+      and set up a Read API Key, and use that here.
+    </p>
+  </div>
+
+  <div class="key-set mt-3">
+    <h3>Pre-Scouting Assistant</h3>
+    <div class="form-group">
+      <label for="eventKey">Event Key</label>
+      <input type="text" class="form-control" id="eventKey" value="2019macma"
+             aria-describedby="eventHelp" placeholder="TBA Event Key (i.e. 2019nhgrs)">
+      <small id="eventHelp" class="form-text text-muted">
+        From <a href="https://www.thebluealliance.com/">TheBlueAlliance.com</a></small>
+    </div>
+    <button type="submit" class="btn btn-primary" id="showTeams">
+      <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+      Show Teams
+    </button>
+  </div>
+
+  <div id="results">
+    <table class="table table-striped">
+      <thead><tr><th>Team</th><th>Events</th><th>Event Summaries (starting level || climb level || opr)</th></tr></thead>
+      <tbody>Event Results</tbody>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>
