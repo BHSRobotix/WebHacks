@@ -64,6 +64,14 @@
       }
     },
 
+    fetchMatchesAtEvent: async function(eventkey) {
+      if (isAuthKeySet()) {
+        const res = await tbaFetch(`/event/${eventKey}/matches`);
+        let data = await res.json();
+        return data;
+      }
+    },
+
     fetchOprsAtEvent: async function(eventKey) {
       if (isAuthKeySet()) {
         const res = await tbaFetch(`/event/${eventKey}/oprs`);

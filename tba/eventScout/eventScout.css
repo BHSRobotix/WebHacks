@@ -1,0 +1,8 @@
+div#results {
+    display: none;
+    margin: 36px 24px;
+}
+
+.tab-pane table.table {
+    margin-top: 2em;
+}
