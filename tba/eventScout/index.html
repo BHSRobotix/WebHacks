@@ -27,7 +27,7 @@
       return Math.round(num * 100) / 100;
     };
 
-    const createTeamRows = function(tableBodySelector, sortFn, statsFirst) {
+    const createTeamRows = function(tableBodySelector, sortFn, statsFirst, showRowNumber) {
       if (eventMatchData.length < 1) return;
       let jqTableBody = $(tableBodySelector);
       jqTableBody.empty();
@@ -36,6 +36,9 @@
         const teamKey = eventMatchData[i].team;
         const teamNumber = teamKey.substr('frc'.length);
         let jqTeamRow = $(`<tr id="${teamKey}" class="team-row"></tr>`).appendTo(jqTableBody);
+        if (showRowNumber) {
+          jqTeamRow.append(`<td>${i+1}</td>`);
+        }
         jqTeamRow.append(`<td>${teamNumber}</td>`);
         if (statsFirst) {
           jqTeamRow.append(`<td class="stats stats-opr">${rnd2(eventStatsData.oprs[teamKey])}</td>`);
@@ -98,8 +101,8 @@
             const apts = a.climb.three * 12 + a.climb.two * 6 + a.climb.one * 3;
             const bpts = b.climb.three * 12 + b.climb.two * 6 + b.climb.one * 3;
             return bpts - apts;
-          });
-          createTeamRows('#opr table tbody', (a, b) => eventStatsData.oprs[b.team] - eventStatsData.oprs[a.team], true);
+          }, false, true);
+          createTeamRows('#opr table tbody', (a, b) => eventStatsData.oprs[b.team] - eventStatsData.oprs[a.team], true, true);
           $('#results').show();
           $('#showTeams .spinner-border').addClass('d-none');
           clearInterval(waitIntervalId);
@@ -192,8 +195,8 @@
       <div class="tab-pane fade" id="climb" role="tabpanel" aria-labelledby="climb-tab">
         <table class="table table-striped">
           <thead>
-          <tr><th></th><th colspan="3">Starting Level</th><th colspan="4">Climb Level</th><th colspan="3">Stats</th></tr>
-          <tr><th>Team</th><th>0</th><th>1</th><th>2</th><th>0</th><th>1</th><th>2</th><th>3</th><th>OPR</th><th>DPR</th><th>CCWM</th></tr>
+          <tr><th></th><th></th><th colspan="3">Starting Level</th><th colspan="4">Climb Level</th><th colspan="3">Stats</th></tr>
+          <tr><th>Rank</th><th>Team</th><th>0</th><th>1</th><th>2</th><th>0</th><th>1</th><th>2</th><th>3</th><th>OPR</th><th>DPR</th><th>CCWM</th></tr>
           </thead>
           <tbody></tbody>
         </table>
@@ -201,8 +204,8 @@
       <div class="tab-pane fade" id="opr" role="tabpanel" aria-labelledby="opr-tab">
         <table class="table table-striped">
           <thead>
-          <tr><th></th><th colspan="3">Stats</th><th colspan="3">Starting Level</th><th colspan="4">Climb Level</th></tr>
-          <tr><th>Team</th><th>OPR</th><th>DPR</th><th>CCWM</th><th>0</th><th>1</th><th>2</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
+          <tr><th></th><th></th><th colspan="3">Stats</th><th colspan="3">Starting Level</th><th colspan="4">Climb Level</th></tr>
+          <tr><th>Rank</th><th>Team</th><th>OPR</th><th>DPR</th><th>CCWM</th><th>0</th><th>1</th><th>2</th><th>0</th><th>1</th><th>2</th><th>3</th></tr>
           </thead>
           <tbody></tbody>
         </table>
